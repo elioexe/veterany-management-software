@@ -1,0 +1,127 @@
+@startuml
+
+
+class client {
+  nom VARCHAR NOT NULL
+  prenom VARCHAR NOT NULL
+  date_naissance DATE NOT NULL
+  adresse VARCHAR NOT NULL
+  telephone NUMERIC(10) UNIQUE NOT NULL
+}
+note top : tous les propriétaires sont des clients et tous les clients sont des propriétaires
+
+
+class patient{
+  nom VARCHAR NOT NULL
+  date_naissance TIMESTAMP
+  num_puce INTEGER UNIQUE
+  num_passeport INTEGER UNIQUE
+}
+
+
+class veterinaire{
+  nom VARCHAR NOT NULL
+  prenom VARCHAR NOT NULL
+  date_naissance DATE NOT NULL
+  adresse VARCHAR NOT NULL
+  telephone NUMERIC(10) UNIQUE NOT NULL
+}
+note top:ne peut pas soigner ses propres animaux dans la clinique et ne peut pas être un assistant
+
+class assistant{
+  nom VARCHAR NOT NULL
+  prenom VARCHAR NOT NULL
+  date_naissance DATE NOT NULL
+  adresse VARCHAR NOT NULL
+  telephone NUMERIC(10) UNIQUE NOT NULL
+}
+note bottom:ne peut pas soigner ses propres animaux dans la clinique et ne peut pas être un vétérinaire
+
+class dossier_medical{
+}
+
+class resultats_analyse{
+  date DATETIME NOT NULL
+  lien HYPERLIEN UNIQUE NOT NULL
+}
+
+class observation_generale{
+  date DATETIME NOT NULL
+  description VARCHAR NOT NULL
+}
+note left : une observation generale est forcement redigée par un vétérinaire ou un assistant
+
+class procedure{
+  date DATETIME NOT NULL
+  description VARCHAR NOT NULL
+}
+
+
+class taille{
+  date DATETIME NOT NULL
+  valeur INTEGER
+}
+
+class poids{
+  date DATETIME NOT NULL
+  valeur INTEGER
+}
+
+
+class traitement{
+  date DATETIME NOT NULL
+  nom VARCHAR NOT NULL
+  date_debut DATETIME NOT NULL
+  duree INTEGER NOT NULL
+}
+
+
+class medicament{
+  qté_jour INTEGER NOT NULL
+  molecule VARCHAR {key}
+  effet VARCHAR NOT NULL
+}
+note right : on suppose une molécule de médicament unique
+
+class especes{
+  nom {'félin', 'canidé', 'reptile', 'rongueurs', 'oiseaux', 'autres'}
+}
+
+class suit{
+  date_debut DATETIME NOT NULL
+  date_fin DATETIME NOT NULL
+}
+
+class est_proprietaire_de{
+  debut_periode DATETIME NOT NULL
+  fin_periode DATETIME NOT NULL
+}
+
+especes "1..N" -- "1..N" assistant: < est specialise
+veterinaire "1..N" -->  "1..N" especes: est specialise >
+
+assistant "0..1" -- "1..N" observation_generale: rédige >
+veterinaire "0..1" -- "1..N" observation_generale: rédige >
+
+veterinaire "1..N"-- "1..N" traitement: peut prescrire >
+
+patient "1..1" -- "1..1" dossier_medical: possede >
+
+traitement "1..N" -- "1..1" dossier_medical: < contient
+medicament "1..N" -- "0..N" traitement: < se compose
+dossier_medical "1..1" -- "1..N" observation_generale:contient >
+dossier_medical "1..1" -- "1..N" taille:contient >
+dossier_medical "1..1" -- "1..N" poids:contient >
+dossier_medical "1..1" -- "1..N" procedure:contient >
+dossier_medical "1..1" -- "1..N" resultats_analyse:contient >
+especes "1..1" -- "1..N" patient: < appartient
+especes "1..N" -- "1..N" medicament: < est autorisé pour
+
+client "1..N" -- "1..N" patient
+veterinaire"1..N" -- "1..N" patient
+(patient,veterinaire) .. suit
+(client,patient) .. est_proprietaire_de
+
+
+
+@enduml
